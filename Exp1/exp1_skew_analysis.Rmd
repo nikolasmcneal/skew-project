@@ -1,0 +1,106 @@
+---
+title: "pwr_analysis_final_fix.rmd"
+author: "Nikolas McNeal"
+date: "10/31/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#packageurl<-"https://cran.r-project.org/src/contrib/Archive/nloptr/nloptr_1.2.1.tar.gz"
+#install.packages(packageurl, repos=NULL, type="source")
+
+install.packages('simr')
+```
+
+
+```{r}
+library(plyr)
+library(tidyverse)
+library(lme4)
+library(lmerTest)
+library(simr)
+
+
+new.df = read.csv("/Users/nikolasmcneal/RStudio Workspace/Color_Discrimination/Exp1/exp1skew.csv")
+
+```
+
+
+```{r}
+new.df <- new.df %>% distinct() %>% filter(trial_type=="blocks-exp")
+```
+
+```{r}
+
+# run LV, MV, HV
+
+
+
+new.df <- new.df %>% 
+  group_by(subject) %>% 
+  mutate(ValDif = abs(Left_sum - Right_sum),
+         valGroup = ifelse(
+           OV < quantile(OV, probs = .25), "LV",
+           ifelse(OV > quantile(OV, probs = .75), "HV",
+           "MV"
+          ))
+         ) %>%
+  ungroup()
+
+
+
+model.LV = glmer(data = new.df[new.df$valGroup == "LV", ],
+              formula = accuracy ~ ValDif + skew*I(valSum/100) + (1|cond:subject) + (0+ValDif|cond:subject) + (0+skew|cond:subject) + (0+I(valSum/100)|cond:subject), 
+              family = binomial(link="logit"),
+              control = glmerControl(optimizer = "bobyqa")
+              )
+
+model.MV = glmer(data = new.df[new.df$valGroup == "MV", ],
+              formula = accuracy ~ ValDif + skew*I(valSum/100) + (1|cond:subject) + (0+ValDif|cond:subject) + (0+skew|cond:subject) + (0+I(valSum/100)|cond:subject), 
+              family = binomial(link="logit"),
+              control = glmerControl(optimizer = "bobyqa")
+              )
+
+
+model.HV = glmer(data = new.df[new.df$valGroup == "HV", ],
+              formula = accuracy ~ ValDif + skew*I(valSum/100) + (1|cond:subject) + (0+ValDif|cond:subject) + (0+skew|cond:subject) + (0+I(valSum/100)|cond:subject), 
+              family = binomial(link="logit"),
+              control = glmerControl(optimizer = "bobyqa")
+              )
+
+model.full_1 = glmer(data = new.df,
+              formula = accuracy ~ ValDif + skew*I(valSum/100) + (1|cond:subject) + (0+ValDif|cond:subject) + (0+skew|cond:subject) + (0+I(valSum/100)|cond:subject), 
+              family = binomial(link="logit"),
+              control = glmerControl(optimizer = "bobyqa")
+              )
+
+model.full_2 = glmer(data = new.df,
+              formula = accuracy ~ ValDif + skew*(valGroup) + (1|cond:subject) + (0+ValDif|cond:subject) + (0+skew|cond:subject) + (0+(valGroup)|cond:subject), 
+              family = binomial(link="logit"),
+              control = glmerControl(optimizer = "bobyqa")
+              )
+
+
+```
+
+```{r}
+library(ggpubr)
+
+new.df %>% 
+  group_by(subject, valGroup, ValDif) %>%
+  mutate(acc = mean(accuracy)) %>%
+  #group_by(subject, valGroup) %>%
+  #mutate(m_acc = mean(acc)) %>%
+  #ungroup() %>%
+  ggplot(aes(x=skew, y=acc, color=valGroup)) + 
+  theme_pubr() +
+  geom_smooth(method = 'lm') +
+  facet_wrap(~block_idx) + # block_number = 1 or 2
+  ggtitle("Experiment 1")
+```
+
+
