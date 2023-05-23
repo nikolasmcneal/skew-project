@@ -645,10 +645,122 @@ eq.rt2 <- strat.df %>%
 eq.choice + eq.rt2 +  plot_layout(guides = "collect") & 
   theme(legend.position = 'top')
 
+########
+# Skew #
+########
+
+# Add skew as variable related to best color/worst color anlayses
+skew = read.csv(paste0(path,"/exp2_skew.csv")) %>%
+  mutate(skew_z = scale(skew),
+         skew_bin = factor(ifelse(skew >= quantile(skew,probs = .75), "Positive Cols",
+         ifelse(skew <= quantile(skew,probs=.25), "Negative Cols", "None")),
+         levels = c("Negative Cols","None","Positive Cols"))
+  )
+
+skew.df <- merge(skew, strat.df,by = "subject") 
+
+skew.df %>%
+  group_by(subject,rainbow,conexp2,skew_bin,aVD,OV_Cat2,HVC) %>%
+  summarise(a = mean(accuracy)) %>%
+  group_by(subject,rainbow,conexp2,skew_bin,OV_Cat2,HVC) %>%
+  summarise(ma = mean(a)) %>%
+  ggplot(aes(x = OV_Cat2, y = ma, color = skew_bin, shape = skew_bin,
+             group = skew_bin))+
+  theme_pubr() +
+  facet_wrap(~HVC, nrow=2) +
+  stat_summary(position = position_dodge(width=.3)) +
+  stat_summary(position = position_dodge(width=.3),
+               geom = "line") +
+  scale_color_viridis_d(end = .8,option = "C"
+  ) +
+  labs(title = "Experiment 2",
+       y = "Mean Acccuracy",
+       x = "Value Category",
+       color = "Skew",
+       shape = "Skew")
+
+# Put Strategy on X-axis
+
+skew.df %>%
+  group_by(subject,rainbow,conexp2,skew_bin,aVD,OV_Cat2,HVC) %>%
+  summarise(a = mean(accuracy)) %>%
+  group_by(subject,rainbow,conexp2,skew_bin,OV_Cat2,HVC) %>%
+  summarise(ma = mean(a)) %>%
+  filter(HVC %in% c("Best Color in Worst Option",
+                    "Best Color in Best Option",
+                    "Worst Color in Worst Option",
+                    "Worst Color in Best Option")) %>%
+  mutate(HVC = factor(HVC,
+                      levels = c("Best Color in Best Option",
+                                 "Worst Color in Best Option",
+                                 "Best Color in Worst Option",
+                                 "Worst Color in Worst Option"),
+                      labels = c("Best Col\nin Best\nOption",
+                                 "Worst Col\nin Best\nOption",
+                                 "Best Col\nin Worst\nOption",
+                                 "Worst Col\nin Worst\nOption")),
+         OV_Cat2 = factor(OV_Cat2,
+                          levels = c("Low","Middle","High"),
+                          labels = c("Low Value",
+                                     "Middle Value",
+                                     "High Value"))
+         ) %>%
+  ggplot(aes(x = HVC, y = ma, color = skew_bin, shape = skew_bin,
+             group = skew_bin))+
+  geom_abline(slope = 0, intercept = 0.5,
+              linetype = "dashed", color = "gray") +
+  theme_pubr() +
+  facet_wrap(~OV_Cat2, nrow=1) +
+  stat_summary(position = position_dodge(width=.3)) +
+  stat_summary(position = position_dodge(width=.3),
+               geom = "line") +
+  scale_color_viridis_d(end = .8,option = "C"
+  ) +
+  labs(title = "Experiment 2",
+       y = "Mean Acccuracy",
+       x = "Strategy",
+       color = "Value-Skew\nDuring Learning",
+       shape = "Value-Skew\nDuring Learning")
 
 
-
-
+skew.df %>%
+  group_by(subject,rainbow,conexp2,skew_bin,aVD,OV_Cat2,HVC) %>%
+  summarise(a = mean(rt/1000)) %>%
+  group_by(subject,rainbow,conexp2,skew_bin,OV_Cat2,HVC) %>%
+  summarise(ma = mean(a)) %>%
+  filter(HVC %in% c("Best Color in Worst Option",
+                    "Best Color in Best Option",
+                    "Worst Color in Worst Option",
+                    "Worst Color in Best Option")) %>%
+  mutate(HVC = factor(HVC,
+                      levels = c("Best Color in Best Option",
+                                 "Worst Color in Best Option",
+                                 "Best Color in Worst Option",
+                                 "Worst Color in Worst Option"),
+                      labels = c("Best Col\nin Best\nOption",
+                                 "Worst Col\nin Best\nOption",
+                                 "Best Col\nin Worst\nOption",
+                                 "Worst Col\nin Worst\nOption")),
+         OV_Cat2 = factor(OV_Cat2,
+                          levels = c("Low","Middle","High"),
+                          labels = c("Low Value",
+                                     "Middle Value",
+                                     "High Value"))
+  ) %>%
+  ggplot(aes(x = HVC, y = ma, color = skew_bin, shape = skew_bin,
+             group = skew_bin))+
+  theme_pubr() +
+  facet_wrap(~OV_Cat2, nrow=1) +
+  stat_summary(position = position_dodge(width=.3)) +
+  stat_summary(position = position_dodge(width=.3),
+               geom = "line") +
+  scale_color_viridis_d(end = .8,option = "C"
+  ) +
+  labs(title = "Experiment 2",
+       y = "Mean RT",
+       x = "Strategy",
+       color = "Value-Skew\nDuring Learning",
+       shape = "Value-Skew\nDuring Learning")
 
 
 

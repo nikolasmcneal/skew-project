@@ -26,13 +26,15 @@ library(simr)
 
 
 #setwd("/users/PAS1962/nikolasmcneal/R/")
+path = getwd()
+
 list.files(path=".", pattern=NULL, all.files=FALSE, full.names=FALSE)
-acc_data = read.csv("/Users/nikolasmcneal/RStudio Workspace/Color_Discrimination/Exp2/val_data_skew.csv")
+acc_data = read.csv(paste0(path,"/val_data_skew.csv"))
 acc_data$cond = "acc"
-val_data = read.csv("/Users/nikolasmcneal/RStudio Workspace/Color_Discrimination/Exp2/acc_data_skew.csv")
+val_data = read.csv(paste0(path,"/acc_data_skew.csv"))
 val_data$cond = "val"
 df1 <- rbind(acc_data, val_data) %>% select(c(skew, subject)) %>% distinct()
-
+write.csv(df1,paste0(path,"/exp2_skew.csv"),row.names = F)
 
 
 
@@ -48,6 +50,7 @@ df2 = rbind(acc2, val2)
 
 # we add the skew from my df to the cleaned data
 new.df = merge(df1, df2, by = 'subject')
+write.csv(new.df)
 ```
 
 
