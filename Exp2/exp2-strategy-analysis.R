@@ -38,8 +38,6 @@ ungroup()
 
 # Code in hypothetical accuracy of choosing by Max Color
 
-
-
 exp2 <- exp2 %>%
   mutate(conexp2 = factor(cond, levels = c("acc","val"),
                         labels = c("Accuracy-Based","Value-Based")),
@@ -140,6 +138,8 @@ exp2 %>%
        shape = "Reward")
 
 # Both types
+
+### LOOK HERE NICK
 strat.df <- exp2 %>%
   group_by(subject,Trial) %>%
   # Is the highest-value color in the better option?
@@ -652,8 +652,8 @@ eq.choice + eq.rt2 +  plot_layout(guides = "collect") &
 # Add skew as variable related to best color/worst color anlayses
 skew = read.csv(paste0(path,"/exp2_skew.csv")) %>%
   mutate(skew_z = scale(skew),
-         skew_bin = factor(ifelse(skew >= quantile(skew,probs = .75), "Positive Cols",
-         ifelse(skew <= quantile(skew,probs=.25), "Negative Cols", "None")),
+         skew_bin = factor(ifelse(skew >= quantile(skew,probs = .75), "Negative Cols",
+         ifelse(skew <= quantile(skew,probs=.25), "Positive Cols", "None")),
          levels = c("Negative Cols","None","Positive Cols"))
   )
 
@@ -681,6 +681,8 @@ skew.df %>%
 
 # Put Strategy on X-axis
 
+
+## USE THIS GRAPH FOR OTHER EXPERIMENTS
 skew.df %>%
   group_by(subject,rainbow,conexp2,skew_bin,aVD,OV_Cat2,HVC) %>%
   summarise(a = mean(accuracy)) %>%

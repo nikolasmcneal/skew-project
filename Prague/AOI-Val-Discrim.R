@@ -142,6 +142,8 @@ fcData.skew <- merge(fcData.rankval, skew.df, by = "SubjectNumber")
 fcData.skew[is.na(fcData.skew$skew),] # This should be empty
 
 
+## REPORT THESE REGRESSIONS 
+# ON SLIDE ABOUT SKEW AND VISUAL PATTERNS
 
 m0 <- lmer(data = fcData.skew,
            formula = roi_rank ~ OV * skew + abs(OV) +
